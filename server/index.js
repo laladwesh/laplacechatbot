@@ -13,7 +13,10 @@ const bcrypt = require('bcryptjs');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin : "https://laplacechatbot-c8gxwocmq-avinash-guptas-projects-54a7892d.vercel.app/"
+}
+));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -116,14 +119,10 @@ app.post("/register", async (req, res) => {
     //hashing
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt); 
-    console.log("successfully hashed password");
     const newUser = new User({ username, password: hashedPassword });
-    console.log("reached after database creation");
     await newUser.save();
-    console.log("saved user successfully");
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    console.log(error)
     res.status(500).json({ error: "Registration failed" });
   }
 });
