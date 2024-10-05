@@ -116,8 +116,9 @@ app.post("/register", async (req, res) => {
     //hashing
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt); 
-
+    console.log("successfully hashed password");
     const newUser = new User({ username, password: hashedPassword });
+    console.log("reached after database creation");
     await newUser.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
