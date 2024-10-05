@@ -21,8 +21,7 @@ function App() {
   const [typingIntervalId, setTypingIntervalId] = useState(null); // To track typing interval
   const chatEndRef = useRef(null);
 
-  const backendUrl =
-    process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+ const backendUrl = process.env.REACT_APP_BACKEND_URL || "https://laplacechatbot.onrender.com";
 
   // Check for token in cookies when the app first loads
   useEffect(() => {
