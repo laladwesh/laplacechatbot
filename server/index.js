@@ -17,16 +17,16 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Initialize Groq (or any other AI model service)
+// Initialize Groq
 const openai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Configure multer for file uploads
+// multer upload
 const upload = multer({
   storage: multer.memoryStorage(), 
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// MongoDB Connection
+// Mongo Connect
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -38,7 +38,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401); // No token provided
+  if (!token) return res.sendStatus(401); // token not provided
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return res.sendStatus(403); // Invalid token
@@ -58,7 +58,7 @@ app.post("/chat", authenticateToken, upload.single('file'), async (req, res) => 
     const file = req.file;
     let fileContent = null;
 
-    // If no message is provided, return the user's chat history
+    // return the user's chat history
     if (!message) {
       const chatHistory = await ChatHistory.find({ userId }).sort({ createdAt: 1 });
       return res.json({ history: chatHistory });
@@ -70,13 +70,13 @@ app.post("/chat", authenticateToken, upload.single('file'), async (req, res) => 
       console.log(`Received file: ${file.originalname}, size: ${file.size} bytes`);
     }
 
-    // Prepare the message for the AI model (Groq, OpenAI, etc.)
+    // Prepare the message for the Groq
     const messages = [
       { role: 'user', content: message }
     ];
 
     if (fileContent) {
-      // Assuming the model can accept base64-encoded images
+      //model accepts base 64 images
       messages.push({
         role: "user",
         content: [
@@ -88,9 +88,9 @@ app.post("/chat", authenticateToken, upload.single('file'), async (req, res) => 
       });
     }
 
-    // Call the AI model to generate a response
+    // Call the Groq model to generate a response
     const response = await openai.chat.completions.create({
-      model: "llama-3.2-11b-vision-preview", // Replace with the correct model
+      model: "llama-3.2-11b-vision-preview",
       messages: messages,
     });
 
@@ -113,9 +113,9 @@ app.post("/chat", authenticateToken, upload.single('file'), async (req, res) => 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
-    // Hash the password before saving
-    const salt = await bcrypt.genSalt(10); // Generate a salt
-    const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
+    //hashing
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt); 
 
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
@@ -135,13 +135,13 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Compare the hashed password with the user-provided password
+    // Comparing the hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Create a token with a 7-day expiration
+    // token creation along with expiration
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, userId: user._id });
   } catch (error) {
