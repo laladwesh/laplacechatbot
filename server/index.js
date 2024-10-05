@@ -49,7 +49,7 @@ const authenticateToken = (req, res, next) => {
 //test endpoint
 app.get("/" , (req , res) => {
   res.status(201).json("Successfully Connected");
-}
+});
 // POST endpoint for chat
 app.post("/chat", authenticateToken, upload.single('file'), async (req, res) => {
   try {
