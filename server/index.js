@@ -13,10 +13,7 @@ const bcrypt = require('bcryptjs');
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin : "https://laplacechatbot-c8gxwocmq-avinash-guptas-projects-54a7892d.vercel.app/"
-}
-));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
