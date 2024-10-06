@@ -13,7 +13,7 @@ const bcrypt = require('bcryptjs');
 
 dotenv.config();
 const corsOptions = {
-  origin:"https://laplacechatbot-edos5iy6x-avinash-guptas-projects-54a7892d.vercel.app",
+  origin: 'https://laplacechatbot.vercel.app', // The final production domain
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow credentials (cookies)
