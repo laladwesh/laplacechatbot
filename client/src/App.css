@@ -295,6 +295,8 @@ input[type="checkbox"]:hover {
   border-radius: 8px;
   font-size: 16px;
   outline: none;
+  position: relative;
+  right: 15px;
 }
 
 .login-input:focus {
@@ -393,6 +395,8 @@ input[type="checkbox"]:hover {
   border-radius: 8px;
   font-size: 16px;
   outline: none;
+  position: relative;
+  right: 15px;
 }
 
 .register-input:focus {
@@ -455,4 +459,8 @@ input[type="checkbox"]:hover {
   outline: none;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
-
+/* Register-Link button  */
+.register-link:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
