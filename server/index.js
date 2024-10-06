@@ -10,21 +10,10 @@ const ChatHistory = require("./models/ChatHistory");
 const Groq = require("groq-sdk");
 const bcrypt = require('bcryptjs');
 
-const allowedOrigins = [
-  'https://laplacechatbot-edos5iy6x-avinash-guptas-projects-54a7892d.vercel.app', // Your Vercel frontend
-  'https://laplacechatbot.vercel.app' 
-];
 
 dotenv.config();
 const corsOptions = {
-  origin: function (origin, callback) {
-    // If origin is in the allowed origins array or is undefined (for same-origin requests)
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin:"https://laplacechatbot-edos5iy6x-avinash-guptas-projects-54a7892d.vercel.app",
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow credentials (cookies)
