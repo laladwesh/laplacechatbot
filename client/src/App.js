@@ -20,8 +20,8 @@ function App() {
   const [copiedIndex, setCopiedIndex] = useState(-1); // Track which code block was copied
   const [typingIntervalId, setTypingIntervalId] = useState(null); // To track typing interval
   const chatEndRef = useRef(null);
-
- const backendUrl = process.env.REACT_APP_BACKEND_URL || "https://laplacechatbot.onrender.com";
+  
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || "https://laplacechatbot.onrender.com";
 
   // Check for token in cookies when the app first loads
   useEffect(() => {
@@ -43,9 +43,10 @@ function App() {
   useEffect(() => {
     if (token && userId) {
       fetchChatHistory();
+      
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, userId ]);
+  }, [token, userId]);
 
   const fetchChatHistory = async () => {
     try {
@@ -204,12 +205,23 @@ function App() {
     setIsListening(true);
   };
 
-  // Function to detect code blocks and format them with a copy button
+  // Function to detect code blocks, bold, and italic text, and format them with a copy button
   const renderMessageContent = (message, msgIndex) => {
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    const boldRegex = /\*\*(.*?)\*\*/g; // Matches **bold**
+    const italicRegex = /\*(.*?)\*/g;    // Matches *italic*
+
     const matches = [...message.matchAll(codeBlockRegex)];
 
-    if (matches.length === 0) return <span>{message}</span>; // No code block
+    if (matches.length === 0) {
+      // Replace bold and italic markers with actual HTML elements
+      let formattedMessage = message
+        .replace(boldRegex, "<strong>$1</strong>")   // Replace **text** with <strong>text</strong>
+        .replace(italicRegex, "<em>$1</em>");        // Replace *text* with <em>text</em>
+    
+      // Return the message with the formatting
+      return <span dangerouslySetInnerHTML={{ __html: formattedMessage }}></span>;
+    }
 
     const formattedMessage = [];
     let lastIndex = 0;
@@ -218,7 +230,9 @@ function App() {
       const [fullMatch, language, code] = match;
       const beforeText = message.slice(lastIndex, match.index);
 
-      formattedMessage.push(<span key={`text-${index}`}>{beforeText}</span>); // Add regular text
+      formattedMessage.push(
+        <span key={`text-${index}`}>{beforeText}</span>
+      );
 
       formattedMessage.push(
         <div key={`code-${index}`} className="code-block">
@@ -245,7 +259,6 @@ function App() {
       lastIndex = match.index + fullMatch.length;
     });
 
-    // Add any remaining text after the last code block
     formattedMessage.push(
       <span key="last-text">{message.slice(lastIndex)}</span>
     );
@@ -275,7 +288,9 @@ function App() {
       Cookies.set("userId", response.data.userId, { expires: 7 });
       setCurrentView("chat");
     } catch (error) {
-      setError("Login failed. Please check your credentials.");
+      setError(
+        error.response?.data?.message || "Login failed. Please check your credentials."
+      ); // Display error message from backend if present
     }
   };
 
@@ -295,7 +310,9 @@ function App() {
       alert("Registration successful! Please login.");
       setCurrentView("login"); // Redirect to login after registration
     } catch (err) {
-      setError("Registration failed. Please try again.");
+      setError(
+        err.response?.data?.error || "Registration failed. Please try again."
+      ); // Display error message from backend if present
     } finally {
       setLoading(false);
     }
@@ -314,10 +331,10 @@ function App() {
   return (
     <div className="container">
       {currentView === "login" && (
-        <Login onLogin={handleLogin} setCurrentView={setCurrentView} />
+        <Login onLogin={handleLogin} setCurrentView={setCurrentView} error={error} />
       )}
       {currentView === "register" && (
-        <Register onRegister={handleRegister} setCurrentView={setCurrentView} />
+        <Register onRegister={handleRegister} setCurrentView={setCurrentView} error={error} />
       )}
       {currentView === "chat" && token && (
         <>
@@ -390,20 +407,18 @@ function App() {
 }
 
 // Login Component
-const Login = ({ onLogin, setCurrentView }) => {
+const Login = ({ onLogin, setCurrentView, error }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleLogin = async () => {
     setLoading(true);
-    setError("");
 
     try {
       await onLogin(username, password);
     } catch (err) {
-      setError("Login failed.");
+      // Error handled in parent
     } finally {
       setLoading(false);
     }
@@ -411,55 +426,53 @@ const Login = ({ onLogin, setCurrentView }) => {
 
   return (
     <div className="login-container">
-  <h2 className="login-title">Login</h2>
-  {error && <p className="error-message">{error}</p>}
-  <div className="login-input-group">
-    <input
-      className="login-input"
-      type="text"
-      placeholder="Username"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-    />
-    <input
-      className="login-input"
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
-  </div>
-  <div className="login-actions">
-    <button className="login-button" onClick={handleLogin} disabled={loading}>
-      {loading ? "Loading..." : "Login"}
-    </button>
-  </div>
-  <div className="register-redirect">
-    Don't have an account?{" "}
-    <button className="register-link" onClick={() => setCurrentView("register")}>
-      Register here
-    </button>
-  </div>
-</div>
-
+      <h1>Welcome To Laplace's Chatbot</h1>
+      <h2 className="login-title"> </h2>
+      {error && <p className="error-message">{error}</p>}
+      <div className="login-input-group">
+        <input
+          className="login-input"
+          type="text"
+          placeholder="What's your spy name?"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          className="login-input"
+          type="password"
+          placeholder="What's the password?"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <div className="login-actions">
+        <button className="login-button" onClick={handleLogin} disabled={loading}>
+          {loading ? "Loading..." : "Login"}
+        </button>
+      </div>
+      <div className="register-redirect">
+        Don't have an account?{" "}
+        <button className="register-link" onClick={() => setCurrentView("register")}>
+          Register here
+        </button>
+      </div>
+    </div>
   );
 };
 
 // Register Component
-const Register = ({ onRegister, setCurrentView }) => {
+const Register = ({ onRegister, setCurrentView, error }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleRegister = async () => {
     setLoading(true);
-    setError("");
 
     try {
       await onRegister(username, password);
     } catch (err) {
-      setError("Registration failed.");
+      // Error handled in parent
     } finally {
       setLoading(false);
     }
@@ -467,34 +480,35 @@ const Register = ({ onRegister, setCurrentView }) => {
 
   return (
     <div className="register-container">
-  <h2 className="register-title">Register</h2>
-  {error && <p className="error-message">{error}</p>}
-  <div className="register-input-group">
-    <input
-      className="register-input"
-      type="text"
-      placeholder="Username"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-    />
-    <input
-      className="register-input"
-      type="password"
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-    />
-  </div>
-  <button className="register-button" onClick={handleRegister} disabled={loading}>
-    {loading ? "Registering..." : "Register"}
-  </button>
-  <div className="login-redirect">
-    Already have an account?{" "}
-    <button className="login-link" onClick={() => setCurrentView("login")}>
-      Login here
-    </button>
-  </div>
-</div>
+      <h1>Welcome To Laplace's Chatbot</h1>
+      <h2 className="register-title"> </h2>
+      {error && <p className="error-message">{error}</p>}
+      <div className="register-input-group">
+        <input
+          className="register-input"
+          type="text"
+          placeholder="Pick a name for your chatbot journey..."
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          className="register-input"
+          type="password"
+          placeholder="Secure your journey with a password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <button className="register-button" onClick={handleRegister} disabled={loading}>
+        {loading ? "Registering..." : "Register"}
+      </button>
+      <div className="login-redirect">
+        Already have an account?{" "}
+        <button className="login-link" onClick={() => setCurrentView("login")}>
+          Login here
+        </button>
+      </div>
+    </div>
   );
 };
 
