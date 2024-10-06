@@ -11,9 +11,12 @@ const Groq = require("groq-sdk");
 const bcrypt = require('bcryptjs');
 
 dotenv.config();
-
+const corsOptions = {
+  origin: 'https://laplacechatbot.vercel.app/',
+  optionsSuccessStatus: 200,
+};
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
